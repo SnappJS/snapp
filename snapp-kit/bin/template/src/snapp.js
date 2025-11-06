@@ -1,5 +1,5 @@
 
-/*!
+/*
  * Snapp Framework v2.1.1
  * A lightweight JSX-like framework for vanilla JavaScript
  *
@@ -12,7 +12,8 @@
  * - Component-based architecture
  * - Zero dependencies
  * - Lightweight and fast
- * - Dynamic state
+;*l
+ - Dynamic state
  *
  * Built with ❤️ for modern web development
  *
@@ -27,15 +28,15 @@ const snapp = (() => {
 
   var DOMReady = false;
   var track_dynamic = null;
-  
+
   const dynamicData = {};
   const dynamicDependencies = new Map();
-  
+
   const eventListener = {};
   const elementEvent = {};
 
-  const eventMap = { 
-    'onmouseenter': 'onmouseover', 
+  const eventMap = {
+    'onmouseenter': 'onmouseover',
     'onmouseleave': 'onmouseout',
     'ondoubleclick': 'ondblclick'
   };
@@ -57,12 +58,12 @@ const snapp = (() => {
     const flatChildren = flattenChildren(children);
     if (element != "<>" && typeof element === "string")
       return createElement(element, props, flatChildren);
-    
-    
+
+
     if (typeof element === 'function')
       return createComponent(element, props, flatChildren);
-    
-    if (element === "<>") 
+
+    if (element === "<>")
       return createFragment(flatChildren);
   }
 
@@ -73,7 +74,7 @@ const snapp = (() => {
       if (typeof callBack === "function") return callBack(false)
     }
 
-    if (typeof App === 'string' || typeof App === 'number' || App instanceof Element ||  App instanceof DocumentFragment) {
+    if (typeof App === 'string' || typeof App === 'number' || App instanceof Element || App instanceof DocumentFragment) {
       DOMReady = false;
 
       switch (true) {
@@ -81,11 +82,11 @@ const snapp = (() => {
           body.before(App);
           break;
 
-          case (type === "prepend"):
-            body.prepend(App);
+        case (type === "prepend"):
+          body.prepend(App);
           break;
 
-          case (type === "replace"):
+        case (type === "replace"):
           body.replaceWith(App);
           break;
 
@@ -100,7 +101,7 @@ const snapp = (() => {
         default:
           body.replaceChildren(App);
           break;
-        }
+      }
 
       DOMReady = true;
       document.dispatchEvent(new Event("DOM"))
@@ -195,85 +196,95 @@ const snapp = (() => {
     dataId++
 
     if (props) {
-        for (let [key, value] of Object.entries(props)) {
+      for (let [key, value] of Object.entries(props)) {
 
-          if (key === "className") key = "class";
-          if (key === "htmlFor") key = "for";
+        if (value == null || value === false) continue
 
-          if (key === 'style') {
-            if (typeof value === 'object') {
-              for (const [property, style] of Object.entries(value)) {
-                track_dynamic = new Set()
-                const mainStyle = (typeof style === "function") ? style() : style;
-                const newDynamicId = [...track_dynamic]
-                track_dynamic = null;
+        if (key === "className") key = "class";
+        if (key === "htmlFor") key = "for";
 
-                if (newDynamicId.length > 0) {
-                  const subscribeData = {
-                    type: "style",
-                    prop: property,
-                    temp: style,
-                    subscribe: newDynamicId
-                  }
-                
-                  ele.setAttribute("snapp-dynamic", dataId);
-                  subscribeDynamic(newDynamicId, subscribeData, ele)
-                }
-                
-                if (property.includes('-')) {
-                  ele.style.setProperty(property, mainStyle);
-                } else {
-                  ele.style[property] = mainStyle;
-                }
-              }
-            }
-            else return console.warn(`Invalid style for ${element}`)
-            continue;
-          }
-          
-          if(key.startsWith("on") && key !== "on" && typeof value === "function") {
-            let lowerCaseKey = key.toLowerCase();
-            lowerCaseKey = eventMap[lowerCaseKey] || lowerCaseKey;
-            
-            if (lowerCaseKey in ele) {
-              const eventType = lowerCaseKey.slice(2);
-              ele.setAttribute("snapp-data", dataId);
-              addEventListener(eventType, value, dataId);
-              ele.setAttribute("snapp-e-"+eventType, "true");
-            } else {
-              console.warn(`Event "${lowerCaseKey}", Do not exist for `, ele)
-            }
-            continue;
-          }
-
-          if (typeof value === "function" && !key.startsWith("on")) {
-            track_dynamic = new Set()
-            ele.setAttribute(key, value())
-            const newDynamicId = [...track_dynamic]
-            track_dynamic = null;
-
-            if (newDynamicId.length > 0) {
-              const subscribeData = {
-                type: "attr",
-                attr: key,
-                temp: value,
-                subscribe: newDynamicId
-              }
-              
-              ele.setAttribute("snapp-dynamic", dataId);
-              subscribeDynamic(newDynamicId, subscribeData, ele)
-            }
-
-            continue;
-          }
-                    
-          // Default
-          ele.setAttribute(key, value);
+        if (value === true || value === "") {
+          ele.setAttribute(key, "")
+          continue
         }
+
+        if (key === 'style') {
+          if (typeof value === 'object') {
+            for (const [property, style] of Object.entries(value)) {
+              track_dynamic = new Set()
+              const mainStyle = (typeof style === "function") ? style() : style;
+              const newDynamicId = [...track_dynamic]
+              track_dynamic = null;
+
+              if (newDynamicId.length > 0) {
+                const subscribeData = {
+                  type: "style",
+                  prop: property,
+                  temp: style,
+                  subscribe: newDynamicId
+                }
+
+                ele.setAttribute("snapp-dynamic", dataId);
+                subscribeDynamic(newDynamicId, subscribeData, ele)
+              }
+
+              if (property.includes('-')) {
+                ele.style.setProperty(property, mainStyle);
+              } else {
+                ele.style[property] = mainStyle;
+              }
+            }
+          }
+          else {
+            console.warn(`Invalid style for ${element} `, value)
+            continue
+          }
+          continue;
+        }
+
+        if (key.startsWith("on") && key !== "on" && typeof value === "function") {
+          let lowerCaseKey = key.toLowerCase();
+          lowerCaseKey = eventMap[lowerCaseKey] || lowerCaseKey;
+
+          if (lowerCaseKey in ele) {
+            const eventType = lowerCaseKey.slice(2);
+            ele.setAttribute("snapp-data", dataId);
+            addEventListener(eventType, value, dataId);
+            ele.setAttribute("snapp-e-" + eventType, "true");
+          } else {
+            console.warn(`Event "${lowerCaseKey}", Do not exist for `, ele)
+          }
+          continue;
+        }
+
+        if (typeof value === "function" && !key.startsWith("on")) {
+          track_dynamic = new Set()
+          ele.setAttribute(key, value())
+          const newDynamicId = [...track_dynamic]
+          track_dynamic = null;
+
+          if (newDynamicId.length > 0) {
+            const subscribeData = {
+              type: "attr",
+              attr: key,
+              temp: value,
+              subscribe: newDynamicId
+            }
+
+            ele.setAttribute("snapp-dynamic", dataId);
+            subscribeDynamic(newDynamicId, subscribeData, ele)
+          }
+
+          continue;
+        }
+
+        // Default
+        ele.setAttribute(key, value);
+      }
     }
-    
+
     children.forEach(node => {
-      if (typeof node === 'string' || typeof node === 'number' || node instanceof Element ||  node instanceof DocumentFragment) {
+      if (typeof node === 'string' || typeof node === 'number' || node instanceof Element || node instanceof DocumentFragment) {
         ele.append(node);
         return;
       }
@@ -307,7 +318,7 @@ const snapp = (() => {
     const frag = document.createDocumentFragment();
     children.forEach(node => {
       if (typeof node === 'string' || typeof node === 'number' || node instanceof Element || node instanceof DocumentFragment) {
-          frag.append(node);
+        frag.append(node);
       }
     });
 
@@ -315,24 +326,24 @@ const snapp = (() => {
   }
 
   const createComponent = (element, props = {}, children) => {
-    const totalProps = {...props, props: children};
+    const totalProps = { ...props, children };
     const comp = element(totalProps);
 
     return comp;
   }
 
   const flattenChildren = (children) => {
-      const final = []
+    const final = []
 
-      for (const child of children) {
-          if (Array.isArray(child)) {
-              final.push(...flattenChildren(child))
-          } else if (child !== null && child !== undefined && child !== '' && child !== false) {
-              final.push(child)
-          }
+    for (const child of children) {
+      if (Array.isArray(child)) {
+        final.push(...flattenChildren(child))
+      } else if (child !== null && child !== undefined && child !== '' && child !== false) {
+        final.push(child)
       }
+    }
 
-      return final
+    return final
   }
 
 
@@ -358,7 +369,7 @@ const snapp = (() => {
     })
   }
 
-    const removestyle = (element, styles) => {
+  const removestyle = (element, styles) => {
     element = (Array.isArray(element)) ? element : [element];
 
     element.forEach(ele => {
@@ -380,16 +391,16 @@ const snapp = (() => {
     })
   }
 
-  
+
   const addEventListener = (eventType, event, elementId) => {
-    
+
     const eventTemplate = (element) => {
       const target = element.target;
 
       if (!target || target.nodeType !== 1) {
         console.log('Target is not an element, skipping...');
         return;
-      }   
+      }
 
       const elWithAttr = target.closest(`[snapp-e-${eventType}]`);
       if (!elWithAttr) return;
@@ -413,7 +424,7 @@ const snapp = (() => {
     dynamicData[id] = {
       value: initialtValue,
       subscribe: new Map()
-    };                               
+    };
 
     const update = (newValue) => {
       if (dynamicData[id].value !== newValue) {
@@ -425,7 +436,7 @@ const snapp = (() => {
     }
 
     return {
-      get value () {
+      get value() {
         if (track_dynamic) {
           track_dynamic.add(id)
         }
@@ -444,26 +455,22 @@ const snapp = (() => {
         const newTemp = dynamic.temp();
         const newTrack_dynamic = [...track_dynamic]
         track_dynamic = null;
-  
+
         if (dynamic.type === "node") {
           dynamic.node.nodeValue = newTemp;
-        } 
-        
-        else if (dynamic.type === "attr") {
+        } else if (dynamic.type === "attr") {
           element.setAttribute(dynamic.attr, newTemp)
-        }
-        
-        else if (dynamic.type === "style") {
-          if (dynamic.prop.includes('-')) {
+        } else if (dynamic.type === "style") {
+          if (newTemp.includes('-')) {
             element.style.setProperty(dynamic.prop, newTemp);
           } else {
             element.style[dynamic.prop] = newTemp;
           }
         }
-        
+
         newTrack_dynamic.forEach(dynamicId => {
           if (previousDynamicId.has(dynamicId)) return
-  
+
           if (!dynamicData[dynamicId]["subscribe"].has(element)) {
             dynamicData[dynamicId]["subscribe"].set(element, [])
           }
@@ -471,7 +478,7 @@ const snapp = (() => {
           dynamicDependencies.get(element)[item].subscribe.push(dynamicId)
         })
       }
-      
+
     })
   }
 

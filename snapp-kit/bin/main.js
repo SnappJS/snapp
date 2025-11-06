@@ -22,10 +22,10 @@ const getVersionInfo = () => {
   try {
     const packageJsonPath = join(__dirname, '..', 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
-    
+
     console.log(`snapp-kit: v${packageJson.version}`);
     console.log(`snapp: v${SNAPP_VERSION}`);
-    
+
     // Print dependencies if they exist
     if (packageJson.dependencies && Object.keys(packageJson.dependencies).length > 0) {
       console.log('\nDependencies:');
@@ -33,7 +33,7 @@ const getVersionInfo = () => {
         console.log(`  ${name}: ${version}`);
       });
     }
-    
+
     // Print devDependencies if they exist
     if (packageJson.devDependencies && Object.keys(packageJson.devDependencies).length > 0) {
       console.log('\nDev Dependencies:');
@@ -41,7 +41,7 @@ const getVersionInfo = () => {
         console.log(`  ${name}: ${version}`);
       });
     }
-    
+
     // Print peerDependencies if they exist
     if (packageJson.peerDependencies && Object.keys(packageJson.peerDependencies).length > 0) {
       console.log('\nPeer Dependencies:');
@@ -49,7 +49,7 @@ const getVersionInfo = () => {
         console.log(`  ${name}: ${version}`);
       });
     }
-    
+
   } catch (error) {
     console.error('❌ Could not read package.json:', error.message);
     process.exit(1);
@@ -59,35 +59,41 @@ const getVersionInfo = () => {
 // Help message
 const showHelp = () => {
   console.log(`
-🚀 Snapp Kit
+Snapp Kit
 
 Usage:
   snapp <command> [options]
 
 Commands:
-  create         # Create a new Snapp app
-  build          # Build Snapp project
-  
+  create                  # Create a new Snapp app
+  build                   # Build a Snapp project
+  page                    # Generate new page 
+
+───────────────────────
 Build Options:
-  -M, --minify   # Minify output files
-  
+  -E, --entry <path>      # Specify project folder (default: pwd)
+  -M, --minify            # Minify output files
+  -W, --watch             # Watch file changes, rebuild + live server
+  -P, --port <number>     # Change server port (default: 9000)
+
+───────────────────────
+
 General Options:
-  -v, --version  # Show version
-  -h, --help     # Show this this message
+  -v, --version           # Show version
+  -h, --help              # Show this help message
+
+───────────────────────
 
 Examples:
-  snapp create <App Name>  # New Snapp app
-  snapp page <Page Name>   # New Page
-  snapp build              # Build
-  snapp build -W           # Build & Watch
-  snapp build --watch      # Build & Watch
-  snapp build -M           # Build & minify
-  snapp build --minify     # Build & minify
-  snapp build -M -W        # minify & watch
-  snapp -v                 # Show version
-  snapp --version          # Show version
-  snapp -h                 # Show help
-  snapp --help             # Show help
+  snapp create MyApp      # Create new Snapp app
+  snapp page Home         # Generate new page
+  snapp build             # Build project
+  snapp build -E public   # Build project on "public" folder
+  snapp build -M          # Build with minify
+  snapp build -W          # Build & watch
+  snapp build -W -P 8080  # Watch mode on port 8080
+
+───────────────────────
 `);
 };
 
@@ -106,9 +112,9 @@ if (!command || command === '-h' || command === '--help') {
 // Execute command
 const executeCommand = (scriptName, scriptArgs) => {
   const scriptPath = join(__dirname, scriptName);
-  
+
   console.log(`Running ${command} command...`);
-  
+
   const child = spawn('node', [scriptPath, ...scriptArgs], {
     stdio: 'inherit',
     shell: false

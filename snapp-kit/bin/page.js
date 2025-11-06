@@ -35,7 +35,7 @@ const pageTemplateDir = join(__dirname, 'page');
 
 if (!existsSync(pageTemplateDir)) {
   console.error('❌ Page template directory not found!');
-  console.error('💡 Make sure the "page" folder exists in your CLI directory');
+  console.error('Make sure the "page" folder exists in your CLI directory');
   process.exit(1);
 }
 
@@ -113,16 +113,17 @@ try {
   copyPageFiles(pageTemplateDir, pageName);
   
   console.log(`
-✅ Successfully created page '${pageName}'!
+Successfully created page '${pageName}'!
 
 Files created:
   • ${pageName}.html (in root)
   • ${pageName}.jsx (in views/)
 
 Next steps:
-  snapp build
-
-Happy coding! 🎉
+  cd ${appName}
+  snapp build -W
+  -- or --
+  npx snapp build -W (dev dependency)
 `);
   
 } catch (error) {

@@ -33,14 +33,14 @@ if (existsSync(appName)) {
   process.exit(1);
 }
 
-console.log(`🚀 Creating Snapp app: ${appName}`);
+console.log(`Creating Snapp app: ${appName}`);
 
 // Template directory path
 const templateDir = join(__dirname, 'template');
 
 if (!existsSync(templateDir)) {
   console.error('❌ Template directory not found!');
-  console.error('💡 Make sure the template folder exists in your CLI directory, or reinstall snapp-cli');
+  console.error('Make sure the template folder exists in your CLI directory, or reinstall snapp-cli');
   process.exit(1);
 }
 
@@ -98,13 +98,13 @@ try {
   copyTemplate(templateDir, appName);
   
   console.log(`
-✅ Successfully created ${appName}!
+Successfully created ${appName}!
 
 Next steps:
   cd ${appName}
-  snapp build
-
-Happy coding! 🎉
+  snapp build -W
+  -- or --
+  npx snapp build -W (dev dependency)
 `);
   
 } catch (error) {

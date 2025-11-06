@@ -1,6 +1,6 @@
 {
   "name": "snapp-kit",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "A global build tool for Snapp Framework. Install once, use everywhere. Zero dependencies, zero configuration - just compile your JSX/TSX files to vanilla JavaScript.",
   "main": "bin/main.js",
   "bin": {
@@ -11,6 +11,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
+    "snapp-kit",
     "snapp",
     "kit",
     "jsx",
@@ -20,7 +21,8 @@
     "cli",
     "framework",
     "javascript",
-    "typescript"
+    "typescript",
+    "live-server"
   ],
   "author": "kigemmanuel",
   "license": "MIT",
@@ -42,7 +44,9 @@
   ],
   "preferGlobal": true,
   "dependencies": {
-    "fs-extra": "^11.1.1",
-    "esbuild": "^0.25.9"
+    "@compodoc/live-server": "^1.2.3",
+    "chalk": "^5.6.2",
+    "esbuild": "^0.25.12",
+    "fs-extra": "^11.3.2"
   }
 }

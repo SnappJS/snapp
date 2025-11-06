@@ -212,11 +212,12 @@ snapp.render(snappBody, App());
 ## Project Structure & Kit
 
 ### Installation
-**Note: You install this once globally - you do not need to install for every project**
 
 ```bash
 npm install -g snapp-kit
 ```
+
+**Note: If you do not want to install globally, You can Install per project as a Dev Dependency:**
 
 **Read more about snapp-kit on:**
 - [GitHub](https://github.com/kigemmanuel/Snapp/tree/main/snapp-kit)

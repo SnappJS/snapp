@@ -1,6 +1,6 @@
 # Snapp Kit
 
-> **A simple build tool for Snapp Framework**
+> A simple build tool for Snapp Framework
 > ---
 >[![npm version](https://badge.fury.io/js/snapp-kit.svg)](https://www.npmjs.com/package/snapp-kit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -13,7 +13,6 @@
 ## Table of Contents
 
 - [What is Snapp Kit?](#what-is-snapp-kit)
-- [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Commands](#commands)
 - [Troubleshooting](#troubleshooting)
@@ -28,84 +27,68 @@ Snapp Kit compiles your JSX/TSX files to vanilla JavaScript. Simple as that.
 - Compiles JSX/TSX to JavaScript (powered by esbuild)
 - Live server with auto-refresh during development
 - Creates page templates instantly
-- Works globally or as a dev dependency
 
 **What is Snapp?** - A lightweight JavaScript framework. [Learn more →](https://github.com/kigemmanuel/Snapp)
 
 ---
 
-## Installation
+## Quick Start
 
-### Option 1: Global (Recommended)
+### Recommended: Create New Project
 
-Install once, use anywhere:
+```bash
+npm create snapp-app my-app
+
+cd my-app
+npm run snapp
+```
+
+Open http://localhost:9000 - Done!
+
+**Why use this?**
+- No global installation needed
+- Everything set up automatically
+- Works on any machine
+- Perfect for team projects
+
+---
+
+### Alternative: Global Installation
+
+For personal projects or if you want the CLI everywhere:
 
 ```bash
 npm install -g snapp-kit
 
-# for macOs or linux use sudo
+# For macOS/Linux
 sudo npm install -g snapp-kit
 ```
 
-Verify:
-```bash
-snapp --version
-```
-
-### Option 2: As Dev Dependency
-If you do not want to install globally,
-Install per project as a Dev Dependency:
-
-```bash
-mkdir MyProject
-cd MyProject
-npm init -y
-npm install -D snapp-kit
-```
-
-Use with `npx`:
-```bash
-npx snapp --version
-npx snapp create MyApp
-npx snapp build -W -E MyApp
-```
-
-**Note:** The rest of this guide uses global syntax. If using dev dependency, add `npx` before each command.
-
----
-
-## Quick Start
-
-**Global Installation:**
+Then use:
 ```bash
 snapp create my-app
+
 cd my-app
 snapp build -W
 ```
-
-**Dev Dependency:**
-```bash
-mkdir my-app
-cd my-app
-npm init -y
-npm install -D snapp-kit
-
-npx snapp create my-app
-npx snapp build -W -E my-app
-```
-
-That's it! Open http://localhost:9000
 
 ---
 
 ## Commands
 
-### `snapp create <name>`
+> **Note:** If you used `npm create snapp-app`, add prefix commands with `npx` (e.g., `npx snapp build -W`)
 
-Creates a new project with starter files.
+---
+
+### `npm create snapp-app <name>`
+
+Creates a new project with everything configured.
 
 ```bash
-snapp create my-project
+npm create snapp-app my-project
+
+cd my-project
+npm run snapp
 ```
 
 **Creates:**
@@ -114,18 +97,39 @@ my-project/
 ├── views/
 │   └── index.jsx      # Your JSX files
 ├── src/
-|   ├── index.js       
+│   ├── index.js       
 │   └── snapp.js       # Snapp runtime
 └── index.html         # HTML
 ```
 
 ---
 
-### `snapp page <name>`
+### `snapp create <name>`
 
-Generates a new page (HTML + JSX).
+Creates a new project
 
 ```bash
+snapp create my-project
+
+cd my-project
+snapp build -W
+```
+
+---
+
+### `snapp page <name>`
+
+Generates a new page (HTML + JSX). Must be run inside project directory.
+
+**With npm create snapp-app:**
+```bash
+cd my-project
+npx snapp page contact
+```
+
+**With global installation:**
+```bash
+cd my-project
 snapp page contact
 ```
 
@@ -133,30 +137,12 @@ snapp page contact
 - `contact.html` - HTML template
 - `views/contact.jsx` - JSX component
 
-**Generated JSX:**
-```jsx
-import snapp from "../src/snapp.js"
-
-const Contact = () => {
-  return (
-    <div className="contact-page">
-      <h1>Contact</h1>
-      <p>Welcome to the Contact page!</p>
-    </div>
-  )
-}
-
-const snappBody = document.querySelector("#snapp-app");
-snapp.render(snappBody, Contact());
-```
-
 ---
 
 ### `snapp build [options]`
 
 Compiles JSX/TSX files from `views/` to `src/`.
 
-**Basic usage:**
 ```bash
 snapp build          # Build once
 snapp build -W       # Build + watch + live server
@@ -173,46 +159,39 @@ snapp build -W -M    # Watch + live server + minify
 | `-M` | `--minify` | Minify output |
 | `-P` | `--port` | Server port (default: 9000) |
 
-**When to use `-E` or `--entry`:**
+**When to use `-E`:**
 
-If you're **inside** your project folder, just run the command directly:
-```
-my-project/
-├── views/
-├── src/
-└── index.html
-```
+Inside your project - no `-E` needed:
 ```bash
 cd my-project
-snapp build -W    # No -E needed!
+snapp build -W
 ```
 
-If you're **outside** your project folder, use `-E` to specify which folder:
-```
-my-top-folder/
-└── my-project/
-    ├── views/
-    ├── src/
-    └── index.html
-```
+Outside your project - use `-E`:
 ```bash
-cd my-top-folder
-snapp build -W -E my-project    # Use -E to point to project
+snapp build -W -E my-project
 ```
 
 ---
 
-### `snapp --help` | `snapp --version`
+### `snapp --version` | `snapp -V`
+
+Check installed version:
 
 ```bash
-snapp --help      # Show help
-snapp --version   # Show version
+snapp --version
+snapp -V
 ```
 
-**What happens:**
-- You write JSX in `views/`
-- Snapp Kit compiles to `src/`
-- HTML files load from `src/`
+---
+
+### `snapp --help`
+
+Show all available commands:
+
+```bash
+snapp --help
+```
 
 ---
 
@@ -223,14 +202,9 @@ Snapp Kit compiles your files using **esbuild**:
 ```
 views/index.jsx   →  src/index.js
 views/about.tsx   →  src/about.js
-views/home.ts     →  src/home.js
 ```
 
-**Supported files:**
-- `.jsx` → JavaScript with JSX
-- `.tsx` → TypeScript with JSX
-- `.ts` → TypeScript
-- `.js` → Modern JavaScript
+**Supported files:** `.jsx`, `.tsx`, `.ts`, `.js`
 
 **Watch mode:**
 - Starts live server on port 9000
@@ -243,14 +217,20 @@ views/home.ts     →  src/home.js
 
 ### Command not found
 
-**Global:**
+**For npm create:**
+```bash
+npm --version  # Check npm version (need 6+)
+```
+
+**For global installation:**
 ```bash
 npm install -g snapp-kit
 snapp --version
 ```
 
-**Dev dependency:**
+**For npx commands:**
 ```bash
+cd my-project
 npx snapp --version
 ```
 
@@ -260,7 +240,6 @@ npx snapp --version
 
 Check your folder structure:
 ```bash
-ls views/        # Should have .jsx files
 ls views/*.jsx   # Verify files exist
 ```
 
@@ -273,24 +252,8 @@ snapp build -W
 
 ### Port already in use
 
-Use a different port:
 ```bash
 snapp build -W -P 8080
-```
-
----
-
-### Page command not working
-
-Make sure you're in a project folder:
-```bash
-cd my-project
-snapp page home
-```
-
-Or specify folder:
-```bash
-snapp page home -E my-project
 ```
 
 ---
@@ -301,39 +264,15 @@ snapp page home -E my-project
 sudo npm install -g snapp-kit
 ```
 
-Or use dev dependency (no sudo):
-```bash
-mkdir myApp
-cd myApp
-
-npm install -D snapp-kit
-npx snapp --version
-```
+Or use `npm create snapp-app` (no sudo needed!)
 
 ---
 
-## Why Use Snapp Kit?
+## Why Snapp Kit?
 
-**Simple**
-- One command to build
-- No complex config files
-
-**Fast**
-- Powered by esbuild
-- Live reload included
-
-**Flexible**
-- Global or per-project
-- Build once or watch
-
----
-
-## What's New in snapp-kit v3
-
-- **Entry points** - Build any folder with `-E`
-- **Live server** - Auto-refresh in watch mode
-- **Custom ports** - Choose your port with `-P`
-- **Better errors** - Clearer error messages
+- **Simple** - One command to build
+- **Fast** - Powered by esbuild
+- **Flexible** - Global or per-project
 
 ---
 
@@ -341,6 +280,6 @@ npx snapp --version
 
 **Snapp Kit v3**
 
-[Install Now](#installation) • [Snapp Framework](https://github.com/kigemmanuel/Snapp) • [GitHub](https://github.com/kigemmanuel/snapp-kit)
+[Install Now](#quick-start) • [Snapp Framework](https://github.com/kigemmanuel/Snapp) • [GitHub](https://github.com/kigemmanuel/snapp-kit)
 
 </div>

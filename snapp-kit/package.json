@@ -1,6 +1,6 @@
 {
   "name": "snapp-kit",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A global build tool for Snapp Framework. Install once, use everywhere. Zero dependencies, zero configuration - just compile your JSX/TSX files to vanilla JavaScript.",
   "main": "bin/main.js",
   "bin": {

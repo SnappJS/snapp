@@ -211,14 +211,6 @@ snapp.render(snappBody, App());
 
 ## Project Structure & Kit
 
-### Installation
-
-```bash
-npm install -g snapp-kit
-```
-
-**Note: If you do not want to install globally, You can Install per project as a Dev Dependency:**
-
 **Read more about snapp-kit on:**
 - [GitHub](https://github.com/kigemmanuel/Snapp/tree/main/snapp-kit)
 - [npm](https://www.npmjs.com/package/snapp-kit)
@@ -227,11 +219,11 @@ npm install -g snapp-kit
 
 ```bash
 # Create new Snapp project
-snapp create my-awesome-app
+npm create snapp-app my-awesome-app
 cd my-awesome-app
 
 # Start development with hot reload
-snapp build -W
+npm run snapp
 ```
 
 ### Project Structure
@@ -266,21 +258,7 @@ my-snapp-app/
 3. **HTML Templates** - Each page has its own HTML file for SEO optimization
 4. **Link Together** - HTML files import the built JavaScript from the `src/` folder
 
-### Adding New Pages
-
-```bash
-# 1. Run snapp page command
-snapp page myNewPage
-
-# 3.# Run build once again to enable hot reload during development
-snapp build -W
-```
-
 **Snapp build will compile and auto-generate `myNewPage.html`, `views/myNewPage.js` and `src/myNewPage.js`**
-
----
-
-**NOTE: You only need to run 'snapp build' once - it will automatically recompile when you save/edit your code!**
 
 ---
 

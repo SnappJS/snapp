@@ -1,0 +1,24 @@
+{
+  "name": "create-snapp-app",
+  "version": "1.0.1",
+  "description": "Create Snapp apps with zero configuration",
+  "type": "module",
+  "bin": {
+    "create-snapp-app": "./bin/create.js"
+  },
+  "files": [
+    "bin",
+    "template"
+  ],
+  "keywords": [
+    "snapp",
+    "create-snapp-app",
+    "cli",
+    "boilerplate"
+  ],
+  "author": "kigemmanuel",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

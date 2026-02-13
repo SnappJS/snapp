@@ -1,866 +1,798 @@
-# Snapp Framework - Code Explanation
+# Snapp Framework
+
+> A lightweight JSX/TSX framework for building fast, reactive web applications with **direct DOM manipulation** - no virtual DOM overhead.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://img.shields.io/npm/v/@snappjs/core)](https://www.npmjs.com/package/@snappjs/core)
+
+---
 
 ## 📋 Table of Contents
 
-1. [Overview](#overview)
-2. [NPM Scripts Explained](#npm-scripts-explained)
-   - [npm run build](#npm-run-build)
-   - [npm run dev](#npm-run-dev)
-3. [File Structure & Responsibilities](#file-structure--responsibilities)
-   - [src/index.ts - Main Entry Point](#srcindexts---main-entry-point)
-   - [src/types.ts - Type Definitions](#srctypests---type-definitions)
-   - [src/jsx.d.ts - JSX Support](#srjsxdts---jsx-support)
-   - [src/core.ts - Framework Implementation](#srccorects---framework-implementation)
-4. [Architecture & Data Flow](#architecture--data-flow)
-5. [Usage Examples](#usage-examples)
-   - [Basic Counter](#basic-counter)
-   - [Todo List](#todo-list)
-   - [Nested Components](#nested-components)
-6. [How to Extend](#how-to-extend)
-7. [Troubleshooting](#troubleshooting)
-8. [Performance Considerations](#performance-considerations)
-9. [File Dependencies](#file-dependencies)
-10. [Summary](#summary)
+- [What is Snapp?](#what-is-snapp)
+- [Core Concepts](#core-concepts)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [API Reference](#api-reference)
+  - [snapp.create()](#snappcreate)
+  - [snapp.render()](#snapprender)
+  - [snapp.dynamic()](#snappdynamic)
+  - [snapp.on()](#snappon)
+  - [snapp.select() / snapp.selectAll()](#snappselect--snappselect-all)
+  - [snapp.applystyle() / snapp.removestyle()](#snappapplystyle--snappremovestyle)
+  - [snapp.remove()](#snappremove)
+- [Type Definitions](#type-definitions)
+- [Core Architecture](#core-architecture)
+- [Contributing](#contributing)
 
 ---
 
-## Overview
+## What is Snapp?
 
-**Snapp** is a lightweight TypeScript framework for building web UIs with:
+Snapp is a **lightweight JavaScript framework** that compiles JSX/TSX directly to native DOM operations. It's designed for developers who want:
 
-- Direct DOM creation (no virtual DOM)
-- Reactive state management
-- Component composition
-- Full TypeScript support
-- Zero dependencies
+- ✅ **JSX/TSX syntax** you already know
+- ✅ **Direct DOM control** without abstraction layers
+- ✅ **Reactive state** that updates elements individually
+- ✅ **Zero virtual DOM** - just compiled JavaScript
+- ✅ **TypeScript support** out of the box
+- ✅ **Automatic memory management** with built-in cleanup
 
----
+### Why Snapp?
 
-## NPM Scripts Explained
-
-Located in `package.json`, these are the main scripts for development:
-
-### `npm run build` {#npm-run-build}
-
-**Purpose**: Compile TypeScript for production
-
-**What it does:**
-
-- Compiles `src/index.ts` to JavaScript
-- Creates CommonJS format (`dist/index.js`)
-- Creates ES Module format (`dist/index.mjs`)
-- Generates TypeScript definitions (`dist/index.d.ts`)
-- Removes old build files (`--clean`)
-
-**Use when:** Ready to publish or deploy
+| Feature        | Snapp             | Virtual DOM Frameworks    |
+| -------------- | ----------------- | ------------------------- |
+| Learning Curve | Native DOM skills | New abstractions          |
+| Performance    | Direct DOM        | Reconciliation overhead   |
+| Debugging      | Browser DevTools  | Framework DevTools needed |
+| Memory         | Efficient cleanup | GC dependent              |
 
 ---
 
-### `npm run dev` {#npm-run-dev}
+## Core Concepts
 
-**Purpose**: Development mode with automatic rebuilding
+### 1. JSX Compiles to DOM Operations
 
-**What it does:**
+```jsx
+// What you write:
+<button onClick={() => alert("Hi")}>Click me</button>;
 
-- Watches `src/` folder for changes
-- Auto-compiles TypeScript when files change
-- Creates all output formats automatically
-- Keeps running in background
+// Gets compiled to:
+snapp.create("button", { onClick: () => alert("Hi") }, "Click me");
+```
 
-**Use when:** Actively developing - run this and leave it open
+### 2. Dynamic State with Arrow Functions
 
-**How to use:**
+The key difference in Snapp is how you handle reactive values:
+
+```jsx
+const count = snapp.dynamic(0);
+
+// ❌ WRONG - accesses value once at render time
+<p>{count.value}</p>
+
+// ✅ CORRECT - wrapped in arrow function for reactivity
+<p>{() => count.value}</p>
+
+// When count updates, ONLY this text updates:
+count.update(5);
+```
+
+**Why arrow functions?** Snapp tracks dynamic value access inside the function. When you call `count.update()`, it re-executes that function and updates just that specific text node, attribute, or style.
+
+### 3. Regular Variables Stay Static
+
+```jsx
+const staticText = "Hello";
+const dynamicText = snapp.dynamic("World");
+
+<div>
+  {staticText} {/* Static - never changes */}
+  {() => dynamicText.value} {/* Dynamic - updates when dynamicText changes */}
+</div>;
+```
+
+---
+
+## Installation
 
 ```bash
-npm run dev
-# Keep this running while you code
-# Changes auto-compile in real-time
+npm install @snappjs/core
 ```
 
----
+### Basic Setup
 
-## File Structure & Responsibilities {#file-structure--responsibilities}
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My Snapp App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="src/index.js"></script>
+  </body>
+</html>
+```
 
-### 📁 `src/index.ts` - Main Entry Point {#srcindexts---main-entry-point}
-
-**What it does:**
-
-- Imports the main `snapp` object from `core.ts`
-- Re-exports it as the default export
-- Re-exports all public types for TypeScript users
-
-**Why it exists:**
-
-- Single entry point for the entire library
-- Users only need one import statement
-- Keeps `core.ts` focused on implementation
-
-**How to use:**
-
-```typescript
+```jsx
+// src/index.jsx
 import snapp from "@snappjs/core";
 
-// Now you have access to:
-// - snapp.create()
-// - snapp.render()
-// - snapp.dynamic()
-// - and all other methods
+const App = () => {
+  return <h1>Hello Snapp!</h1>;
+};
+
+const app = document.getElementById("app");
+snapp.render(app, App());
 ```
 
 ---
 
-### 📁 `src/types.ts` - Type Definitions {#srctypests---type-definitions}
+## Quick Start
 
-**Purpose**: Central place for all TypeScript type definitions
+### Example 1: Simple Counter
 
-**Key Types**:
+```jsx
+import snapp from "@snappjs/core";
 
-**SnappChild**: Defines what can be passed as children
+const Counter = () => {
+  const count = snapp.dynamic(0);
 
-- Strings, numbers, Elements, DocumentFragments
-- Components, nested arrays
-- null, undefined, false (for conditionals)
+  return (
+    <>
+      <h2>Count: {() => count.value}</h2>
+      <button onClick={() => count.update(count.value + 1)}>Increment</button>
+    </>
+  );
+};
 
-**SnappComponent**: Type for component functions
-
-- Takes props and children
-- Returns Element or DocumentFragment
-
-**SnappProps**: Generic object for component props
-
-- Any key-value pairs
-
-**DynamicValue**: Interface for reactive state
-
-- `value`: Get current value (triggers dependency tracking)
-- `update()`: Set new value and notify dependents
-
-**EventHandler**: Type for event callback functions
-
-- Receives Event object
-
-**HTMLAttributes**: All HTML/SVG attributes and event handlers
-
-- Global attributes: id, class, style, title, etc.
-- Data attributes: data-\*
-- ARIA attributes: aria-\*
-- Event handlers: onClick, onInput, onChange, etc.
-
-**IntrinsicElements**: JSX element type mapping
-
-- Maps tag names to their attribute types
-- Enables JSX syntax support
-
-**RenderType**: How to position rendered content
-
-- "before", "prepend", "append", "replace", "after"
-
-**SubscribeData**: Internal tracking of dependencies
-
-- Links between dynamic values and DOM elements
-
----
-
-### 📁 `src/jsx.d.ts` - JSX Support {#srjsxdts---jsx-support}
-
-**Purpose**: Enable JSX syntax in TypeScript
-
-**What it does:**
-
-- Declares the global `JSX` namespace
-- Maps element names to attribute types
-- Allows `<div>` syntax instead of `snapp.create('div')`
-
-**How it works:**
-
-- TypeScript uses this file to type-check JSX
-- Not executed at runtime
-- Enables IDE autocomplete for JSX
-
-**When to use it:**
-
-```typescript
-// With jsx.d.ts, you can write:
-const button = <button onClick={handleClick}>Click</button>;
-
-// Without it, you'd have to use:
-const button = snapp.create("button", { onClick: handleClick }, "Click");
+snapp.render(document.body, Counter());
 ```
 
+### Example 2: Todo List
+
+```jsx
+import snapp from "@snappjs/core";
+
+const TodoApp = () => {
+  const todos = snapp.dynamic([]);
+  const input = snapp.dynamic("");
+
+  const addTodo = () => {
+    const newTodos = [...todos.value, input.value];
+    todos.update(newTodos);
+    input.update("");
+  };
+
+  return (
+    <div>
+      <h1>Todos</h1>
+      <input
+        value={() => input.value}
+        onInput={(e) => input.update(e.target.value)}
+        placeholder="Add a todo..."
+      />
+      <button onClick={addTodo}>Add</button>
+      <ul>{() => todos.value.map((todo) => <li>{todo}</li>)}</ul>
+    </div>
+  );
+};
+
+snapp.render(document.body, TodoApp());
+```
 ---
 
-### 📁 `src/core.ts` - Framework Implementation {#srccorects---framework-implementation}
+## API Reference
 
-**The main file** that implements all Snapp functionality.
+### snapp.create()
 
-#### Core Concepts
-
-**1. SVG_ELEMENTS Set**
-
-- Identifies which elements are SVG (svg, path, circle, etc.)
-- Used to call `createElementNS()` instead of `createElement()`
-- Ensures SVG elements render correctly
-
-**2. Global State**
-
-- `dataId`: Counter to give each element a unique ID
-- `dynamicId`: Counter for unique dynamic value IDs
-- `DOMReady`: Flag indicating if DOM is ready for rendering
-- `dynamicData`: Storage for all dynamic values and their subscribers
-- `dynamicDependencies`: Maps elements to their dynamic dependencies
-- `eventListener`: Stores event listeners by type
-- `elementEvent`: Maps element IDs to their event handlers
-
-**Why global?** Framework needs to track dependencies across the entire application
-
----
-
-#### Main Functions
-
-**create(element, props, ...children)**
-
-Creates DOM elements, components, or fragments.
-
-How it works:
-
-1. If `element` is a string ("div", "button", etc.):
-   - Creates actual HTML/SVG element
-   - Processes props (attributes, styles, events)
-   - Processes children
-2. If `element` is a function (component):
-   - Calls the function with props and children
-   - Returns what the component returns
-3. If `element` is "<>" (fragment):
-   - Creates DocumentFragment
-   - Groups children without wrapper
-
-Usage:
+Creates a DOM element, component, or fragment.
 
 ```typescript
+create(
+    element: string | Component | "<>",
+    props?: SnappProps,
+    ...children: SnappChild[]
+): Element | DocumentFragment
+```
+
+**Usage:**
+
+```jsx
 // HTML element
-snapp.create("button", { onClick: handleClick }, "Click me");
+snapp.create("div", { id: "main" }, "Hello");
 
 // Component
-snapp.create(MyButton, { label: "Click" });
+const MyComponent = (props) => <div>{props.children}</div>;
+snapp.create(MyComponent, {}, "Hello");
 
-// Fragment (multiple elements without wrapper)
-snapp.create(
-  "<>",
-  null,
-  snapp.create("h1", null, "Title"),
-  snapp.create("p", null, "Content")
-);
+// Fragment
+snapp.create("<>", null, <div>A</div>, <div>B</div>);
+
+// In JSX, you use the angle brackets directly:
+<div id="main">Hello</div>
+<MyComponent>Hello</MyComponent>
+<>
+    <div>A</div>
+    <div>B</div>
+</>
 ```
 
-**How props work:**
+---
 
-- If prop is null/undefined/false: skip it
-- If prop is true: set as boolean attribute (`disabled=""`)
-- If prop is a string/number: set as attribute value
-- If prop is an object (for style): apply each style
-- If prop name starts with "on" and value is function: register as event handler
-- If prop is a function (not event): call it to get value and track dependencies
+### snapp.render()
 
-**How children work:**
-
-- Strings, numbers, Elements, Fragments: append directly
-- Functions: call function to get content (for dynamic text)
-- Nested arrays: flatten recursively
-- false, null, undefined: skip (for conditionals)
-
-**Track dependencies:**
-When creating props/children with functions, the framework tracks which dynamic values are accessed:
+Renders a component or element to the DOM.
 
 ```typescript
-snapp.create("p", null, () => {
-  // Accessing count.value here adds count to this element's dependencies
-  return `Count: ${count.value}`;
+render(
+    target: Element,
+    component: Element | DocumentFragment | string | number,
+    type?: "replace" | "append" | "prepend" | "before" | "after",
+    callback?: (success: boolean) => void
+): void
+```
+
+**Parameters:**
+
+| Parameter   | Type                                            | Default     | Description                               |
+| ----------- | ----------------------------------------------- | ----------- | ----------------------------------------- |
+| `target`    | Element                                         | required    | The DOM element to render to              |
+| `component` | Element \| DocumentFragment \| string \| number | required    | What to render                            |
+| `type`      | string                                          | `"replace"` | Where/how to render                       |
+| `callback`  | Function                                        | optional    | Called with true/false on success/failure |
+
+**Render Types:**
+
+```jsx
+const content = <div>New content</div>;
+const target = document.getElementById("app");
+
+// Replace target's children
+snapp.render(target, content, "replace"); // Default
+
+// Add as first child
+snapp.render(target, content, "prepend");
+
+// Add as last child
+snapp.render(target, content, "append");
+
+// Insert before target
+snapp.render(target, content, "before");
+
+// Insert after target
+snapp.render(target, content, "after");
+
+// With callback
+snapp.render(target, content, "replace", (success) => {
+  if (success) console.log("Rendered!");
 });
-// Now when count updates, this text auto-updates
 ```
 
 ---
 
-**render(target, content, type, callback)**
+### snapp.dynamic()
 
-Renders content to a target DOM element.
-
-Parameters:
-
-- `target`: The element where content goes
-- `content`: What to render (Element, Fragment, string, number)
-- `type`: How to position it (before, prepend, append, replace, after)
-- `callback`: Called with success/failure boolean
-
-Render types:
-
-```
-       [target]
-         ↑↑↑
-     ↓↓↓ | ↓↓↓
-before|prepend|after
-     ↓↓↓ | ↓↓↓
-       append
-       ↓
-    replace
-```
-
-Usage:
+Creates a reactive state value.
 
 ```typescript
-const app = snapp.select("#app");
-const component = snapp.create(MyComponent, {});
-snapp.render(app, component, "replace");
+dynamic<T = any>(initialValue?: T): DynamicValue<T>
 ```
 
----
-
-**dynamic(initialValue)**
-
-Creates reactive state that triggers DOM updates.
-
-How it works:
-
-1. Create a dynamic value: `const count = snapp.dynamic(0);`
-2. Use it in a function: `() => count.value`
-3. Framework tracks the dependency
-4. Update the value: `count.update(5)`
-5. All dependent elements automatically update
-
-Key feature: Accesses to `count.value` are tracked automatically
+**Properties:**
 
 ```typescript
+interface DynamicValue<T> {
+  readonly value: T; // Get current value
+  update: (newValue: T) => void; // Set new value
+}
+```
+
+**Usage:**
+
+```jsx
+// Create dynamic state
 const count = snapp.dynamic(0);
-const doubled = snapp.dynamic(0);
+const user = snapp.dynamic({ name: "John", age: 30 });
+const isVisible = snapp.dynamic(true);
 
-snapp.create("p", null, () => {
-  doubled.update(count.value * 2);
-  return `Count: ${count.value}, Doubled: ${doubled.value}`;
+// Use in JSX with arrow function
+<div>
+  Count: {() => count.value}
+  Name: {() => user.value.name}
+  Visible: {() => (isVisible.value ? "Yes" : "No")}
+</div>;
+
+// Update state
+count.update(5);
+user.update({ name: "Jane", age: 25 });
+isVisible.update(false);
+
+// Update based on previous value
+count.update(count.value + 1);
+```
+
+**Dynamic State in Different Contexts:**
+
+```jsx
+// Text Content
+const message = snapp.dynamic("Hello");
+<p>{() => message.value}</p>;
+
+// Attributes
+const id = snapp.dynamic("item-1");
+<div id={() => id.value}></div>;
+
+// Styles
+const color = snapp.dynamic("blue");
+<p style={{ color: () => color.value }}>Colored text</p>;
+
+// Event Handlers (regular functions)
+const handleClick = () => alert("clicked");
+<button onClick={handleClick}>Click</button>;
+
+// Conditional Rendering
+const showHeader = snapp.dynamic(true);
+<>{() => (showHeader.value ? <header>Title</header> : null)}</>;
+```
+
+---
+
+### snapp.on()
+
+Listens for DOM ready events.
+
+```typescript
+on(event: string, callback: () => void): void
+```
+
+**Usage:**
+
+```jsx
+// Wait for DOM to be ready before accessing elements
+snapp.on("DOM", () => {
+  const element = snapp.select("#myElement");
+  console.log("Element is in DOM:", element);
 });
 
-count.update(3); // Triggers:
-// 1. doubled updates to 6
-// 2. Text recalculates
-// 3. DOM updates automatically
+// snapp.on("DOM") is called after snapp.render() completes
+const App = () => {
+  return <h2 id="myElement">Title</h2>;
+};
+
+snapp.render(document.body, App(), "replace", () => {
+  // At this point, the DOM is ready
+  snapp.on("DOM", () => {
+    console.log("Now we can access #myElement");
+  });
+});
 ```
 
 ---
 
-**select(selector) / selectAll(selector)**
+### snapp.select() / snapp.selectAll()
 
-Find elements in the DOM.
-
-Usage:
+Query DOM elements using CSS selectors.
 
 ```typescript
-// Single element
-const app = snapp.select("#app");
-const button = snapp.select(".btn");
+select(selector: string | string[]): Element | Element[] | null
+selectAll(selector: string | string[]): NodeListOf<Element> | NodeListOf<Element>[] | null
+```
 
-// Multiple selectors
-const elements = snapp.select([".item", ".card"]);
+**Usage:**
 
-// All matching elements
+```jsx
+// Single selector
+const element = snapp.select("#myId");
+const element = snapp.select(".myClass");
+
+// Multiple selectors (returns array)
+const elements = snapp.select(["#id1", "#id2"]);
+
+// Select all matching
 const items = snapp.selectAll(".item");
+const items = snapp.selectAll(".item, .product");
+
+// Multiple selectors for selectAll
+const results = snapp.selectAll([".class1", ".class2"]);
+// Returns array of NodeLists
+
+// Returns null if not found
+const missing = snapp.select("#doesNotExist"); // null
 ```
 
 ---
 
-**applystyle(element, styles) / removestyle(element, styles)**
+### snapp.applystyle() / snapp.removestyle()
 
-Manage element styles.
-
-Usage:
+Manage element styles programmatically.
 
 ```typescript
-// Add/change styles
-snapp.applystyle(button, {
+applystyle(
+    element: Element | Element[],
+    styles: Record<string, string | number>
+): void
+
+removestyle(
+    element: Element | Element[],
+    styles?: Record<string, string | number> | boolean
+): void
+```
+
+**Usage:**
+
+```jsx
+const box = snapp.select("#box");
+
+// Apply styles
+snapp.applystyle(box, {
   backgroundColor: "blue",
-  fontSize: "16px",
+  padding: "20px",
+  "border-radius": "8px", // CSS property names with hyphens work
 });
 
 // Remove specific styles
-snapp.removestyle(button, {
+snapp.removestyle(box, {
   backgroundColor: "blue",
+  padding: "20px",
 });
 
 // Remove all styles
-snapp.removestyle(button, true);
+snapp.removestyle(box, true);
+
+// Multiple elements
+const boxes = snapp.selectAll(".box");
+snapp.applystyle(boxes, { color: "red" });
+snapp.removestyle(boxes, { color: "red" });
 ```
 
 ---
 
-**remove(elements)**
+### snapp.remove()
 
-Remove elements from DOM (cleans up automatically).
-
-Usage:
+Remove elements from the DOM.
 
 ```typescript
+remove(items: Element | Element[]): void
+```
+
+**Usage:**
+
+```jsx
+const element = snapp.select("#myElement");
 snapp.remove(element);
-snapp.remove([el1, el2, el3]);
+
+// Remove multiple
+const items = snapp.selectAll(".item");
+snapp.remove(items);
 ```
-
-Cleanup:
-
-- Event listeners are removed
-- Dynamic dependencies are cleaned up
-- MutationObserver handles all of this automatically
 
 ---
 
-**on(event, callback)**
+## Type Definitions
 
-Listen to framework events.
-
-Currently supports: "DOM" event
+### SnappChild
 
 ```typescript
-snapp.on("DOM", () => {
-  console.log("DOM ready for rendering");
-});
+type SnappChild =
+  | string
+  | number
+  | Element
+  | DocumentFragment
+  | SnappComponent
+  | SnappChild[]
+  | null
+  | undefined
+  | boolean;
 ```
 
----
+Represents anything that can be rendered as a child element.
 
-#### How Events Work (Event Delegation)
-
-**The Problem**: Attaching listeners to every element wastes memory
-
-**The Solution**: Single listener per event type on document
-
-**How it works:**
-
-1. When creating element with `onClick` handler, don't attach listener yet
-2. Mark element with `snapp-e-click` attribute
-3. First time "click" event happens: attach listener to document
-4. When click happens: find element with `snapp-e-click`
-5. Call the registered handler for that element
-6. Multiple elements reuse the same listener!
-
-**Benefits:**
-
-- Less memory usage
-- Works with dynamically added elements
-- Automatic cleanup when elements removed
-
----
-
-#### How Reactivity Works
-
-**Dependency Tracking System**:
-
-1. **Creation Phase**:
-
-   - Create element with function: `() => count.value`
-   - Set `track_dynamic = new Set()`
-   - Call the function
-   - During execution, accesses to `count.value` add ID to `track_dynamic`
-   - Now framework knows this element depends on `count`
-
-2. **Subscription Phase**:
-
-   - Element is added to `count`'s subscriber list
-   - `count` knows which elements depend on it
-
-3. **Update Phase**:
-
-   - Call `count.update(newValue)`
-   - `count` finds all dependent elements
-   - For each element, recalculate the function
-   - Apply new value to DOM
-
-4. **Change Tracking**:
-   - If new value hasn't changed, don't update
-   - If new dependencies appear, subscribe to them
-   - If old dependencies disappear, unsubscribe
-
-**Example**:
+### SnappProps
 
 ```typescript
-const count = snapp.dynamic(0);
-
-snapp.create("p", null, () => `Count: ${count.value}`);
-// During creation:
-// 1. Function executes: track_dynamic records 'count' dependency
-// 2. Element subscribes to count updates
-// 3. When count updates, function re-runs with new value
-// 4. DOM text updates automatically
+type SnappProps = Record<string, any>;
 ```
 
----
+Props object for components. Can contain any key-value pairs.
 
-#### Memory Management
-
-**Problem**: Elements removed from DOM leave behind listeners and subscriptions
-
-**Solution**: MutationObserver watches DOM changes
-
-**How it works**:
-
-1. MutationObserver watches for removed elements
-2. When element is removed:
-   - Delete its event listeners
-   - Remove document listener if no more elements need it
-   - Clean up dynamic subscriptions
-3. Periodic cleanup via `cleardynamicElement()`
-   - Finds elements no longer in DOM
-   - Removes their subscriptions
-
-**Result**: No memory leaks when removing elements
-
----
-
-#### Architecture Summary
-
-**Data Flow**:
-
-```
-create()
-  ├─ Create actual DOM element
-  ├─ Attach attributes and styles
-  ├─ Register event handlers (with delegation)
-  └─ Track dependencies on dynamic values
-
-dynamic(value)
-  └─ Create reactive state object
-
-Element depends on dynamic?
-  ├─ Yes: Subscribe element to updates
-  └─ No: Just create normally
-
-User updates dynamic value?
-  ├─ Get all dependent elements
-  ├─ Recalculate their functions
-  └─ Apply new values to DOM
-
-User removes element?
-  └─ MutationObserver cleans up everything
-```
-
----
-
-## Architecture & Data Flow {#architecture--data-flow}
-
-### High-Level Overview
-
-```
-Developer Code
-    ↓
-snapp.create() ← Define elements/components
-    ↓
-snapp.dynamic() ← Define reactive state
-    ↓
-snapp.render() ← Put it in DOM
-    ↓
-Real DOM Elements
-    ↓
-User Interacts
-    ↓
-Call dynamic.update()
-    ↓
-Auto-update dependent elements ← Dependency tracking
-```
-
-### Key Design Patterns
-
-**1. Direct DOM Manipulation**
-
-- No virtual DOM overhead
-- Create real elements immediately
-- Update them in place
-
-**2. Component Functions**
-
-- Just regular functions that return elements
-- Can take props and children
-- Compose freely
-
-**3. Reactive with Tracking**
-
-- Accesses to dynamic values are tracked automatically
-- No manual dependency lists needed
-- Updates propagate reactively
-
-**4. Event Delegation**
-
-- Single listener per event type
-- Scales efficiently even with many elements
-- Automatic cleanup
-
-**5. Automatic Memory Management**
-
-- MutationObserver watches for removed elements
-- Listeners and subscriptions cleaned automatically
-- No memory leaks
-
----
-
-## Usage Examples {#usage-examples}
-
-### Basic Counter {#basic-counter}
+### SnappComponent
 
 ```typescript
-import snapp from "@snappjs/core";
-
-const count = snapp.dynamic(0);
-
-const Counter = () => {
-  return snapp.create(
-    "div",
-    { style: { padding: "20px" } },
-    snapp.create("p", null, () => `Count: ${count.value}`),
-    snapp.create(
-      "button",
-      {
-        onClick: () => count.update(count.value + 1),
-        style: { padding: "10px", cursor: "pointer" },
-      },
-      "Increment"
-    )
-  );
-};
-
-const app = snapp.select("#app");
-snapp.render(app, Counter(), "replace");
+type SnappComponent<P extends SnappProps = SnappProps> = (
+  props: P & { children?: SnappChild[] }
+) => Element | DocumentFragment;
 ```
 
-### Todo List {#todo-list}
+A component function that takes props and returns a DOM element or fragment.
+
+**Example:**
 
 ```typescript
-const todos = snapp.dynamic([]);
+interface ButtonProps {
+  label: string;
+  onClick?: (e: Event) => void;
+}
 
-const TodoApp = () => {
-  const inputValue = snapp.dynamic("");
-
-  return snapp.create(
-    "div",
-    null,
-    snapp.create("input", {
-      onInput: (e) => inputValue.update(e.target.value),
-      value: () => inputValue.value,
-    }),
-    snapp.create(
-      "button",
-      {
-        onClick: () => {
-          todos.update([...todos.value, inputValue.value]);
-          inputValue.update("");
-        },
-      },
-      "Add"
-    ),
-    snapp.create("ul", null, () =>
-      todos.value.map((todo) => snapp.create("li", null, todo))
-    )
-  );
-};
-
-snapp.render(snapp.select("#app"), TodoApp());
-```
-
-### Nested Components {#nested-components}
-
-```typescript
-const Button = (props) => {
-  return snapp.create(
-    "button",
-    {
-      onClick: props.onClick,
-      style: { padding: "10px", margin: "5px" },
-    },
-    props.children
-  );
-};
-
-const Form = () => {
-  const name = snapp.dynamic("");
-
-  return snapp.create(
-    "form",
-    null,
-    snapp.create("input", {
-      onInput: (e) => name.update(e.target.value),
-      placeholder: "Enter name",
-    }),
-    snapp.create(
-      Button,
-      {
-        onClick: () => console.log(name.value),
-      },
-      "Submit"
-    )
-  );
+const MyButton: SnappComponent<ButtonProps> = (props) => {
+  return <button onClick={props.onClick}>{props.label}</button>;
 };
 ```
 
----
-
-## How to Extend {#how-to-extend}
-
-### Adding a New Method
-
-1. **Add function to `core.ts`**:
+### DynamicValue
 
 ```typescript
-const myFunction = (arg: string): void => {
-  // Implementation
-};
-```
-
-2. **Add to snapp object**:
-
-```typescript
-const snapp = {
-  create,
-  render,
-  // ... existing
-  myFunction, // Add here
-};
-```
-
-3. **Add type to `types.ts`** (if needed):
-
-```typescript
-export interface SnappFramework {
-  myFunction: (arg: string) => void;
+interface DynamicValue<T = any> {
+  readonly value: T;
+  update: (newValue: T) => void;
 }
 ```
 
-### Adding a New Event Type
+Reactive state container that notifies subscribers when updated.
 
-1. **Add to `eventMap` in `core.ts`** (if needed for compatibility):
+### RenderType
 
 ```typescript
-const eventMap = {
-  onmycustomevent: "onmycustomevent",
-};
+type RenderType = "before" | "prepend" | "replace" | "append" | "after";
 ```
 
-2. **Add to `HTMLAttributes` in `types.ts`**:
+Determines where elements are rendered relative to the target.
+
+### EventHandler
 
 ```typescript
-export interface HTMLAttributes {
-  onMyCustomEvent?: EventHandler;
+type EventHandler = (event: Event) => void;
+```
+
+Function called when an event fires.
+
+### HTMLAttributes
+
+Comprehensive attribute interface supporting:
+
+- Global attributes: `id`, `class`, `style`, `title`, etc.
+- Data attributes: `data-*`
+- ARIA attributes: `aria-*`
+- All event handlers: `onClick`, `onSubmit`, `onChange`, etc.
+
+---
+
+## Core Architecture
+
+### How Snapp Works
+
+1. **JSX Compilation** → TypeScript/Babel compiles JSX to `snapp.create()` calls
+2. **Element Creation** → `snapp.create()` builds native DOM elements
+3. **Dynamic Tracking** → When you use `() => dynamicValue.value`, Snapp tracks dependencies
+4. **Subscriptions** → Each dynamic value tracks which elements depend on it
+5. **Updates** → When you call `update()`, only affected text nodes/attributes/styles change
+6. **Cleanup** → MutationObserver automatically cleans up when elements are removed
+
+### Internal Files
+
+#### src/core.ts (Main Implementation)
+
+The heart of Snapp framework containing:
+
+**Key Functions:**
+
+- **`create(element, props, ...children)`** - Creates DOM elements or components
+- **`render(target, component, type, callback)`** - Renders to DOM
+- **`dynamic(initialValue)`** - Creates reactive state
+- **`on(event, callback)`** - Listens for DOM events
+- **`select(selector)` / `selectAll(selector)`** - DOM queries
+- **`applystyle(element, styles)`** - Apply CSS styles
+- **`removestyle(element, styles)`** - Remove CSS styles
+- **`remove(items)`** - Remove elements from DOM
+
+**Internal State Management:**
+
+```typescript
+// Counter for unique element IDs
+let dataId: number = 0;
+
+// Counter for dynamic state IDs
+let dynamicId: number = 1;
+
+// Tracks if DOM is ready
+let DOMReady: boolean = false;
+
+// Tracks which dynamic values are being accessed
+let track_dynamic: Set<string> | null = null;
+
+// Stores all dynamic values and their subscribers
+const dynamicData: Record<
+  string,
+  {
+    value: any;
+    subscribe: Map<Element, number[]>;
+  }
+> = {};
+
+// Maps elements to their dependent dynamic values
+const dynamicDependencies = new Map<Element, SubscribeData[]>();
+
+// Event delegation system
+const eventListener: Record<string, EventHandler> = {};
+const elementEvent: Record<string, Record<number, EventHandler>> = {};
+```
+
+**SVG Support:**
+
+Snapp automatically detects SVG elements and uses `createElementNS()` instead of `createElement()`:
+
+```typescript
+const SVG_ELEMENTS = new Set([
+    "svg", "circle", "ellipse", "line", "path", "polygon", "polyline",
+    "rect", "text", "g", "defs", "filter", "image", "use", "mask", "pattern",
+    "linearGradient", "radialGradient", "stop", "animate", "animateTransform", ...
+]);
+```
+
+**Event Delegation:**
+
+Rather than adding listeners to every element, Snapp uses event delegation:
+
+```typescript
+// Single listener per event type
+document.addEventListener("click", eventTemplate);
+
+// Template checks if target has snapp-e-click attribute
+const elWithAttr = target.closest("[snapp-e-click]");
+if (elWithAttr) {
+  // Get element's ID and call its handler
+  const elementDataId = elWithAttr.getAttribute("snapp-data");
+  elementEvent["click"][elementDataId](event);
 }
 ```
 
-### Adding SVG Support
+This is more efficient than listeners on every element.
 
-Already built-in! Just use SVG element names and they'll be created with `createElementNS()` automatically.
+**Memory Management:**
 
----
-
-## Troubleshooting {#troubleshooting}
-
-### Problem: Dynamic values not updating DOM
-
-**Cause**: Element not created with a function that accesses the value
-
-**Fix**:
+MutationObserver watches for removed elements:
 
 ```typescript
-// ❌ Wrong - value captured at creation time
-const text = snapp.create("p", null, count.value);
-
-// ✅ Correct - function called each update
-const text = snapp.create("p", null, () => count.value);
-```
-
-### Problem: Event handlers not firing
-
-**Cause**: Typo in event name or handler not attached correctly
-
-**Debug**:
-
-```typescript
-// Check in browser DevTools:
-// 1. Element should have snapp-e-eventname attribute
-// 2. Event name should start with lowercase "on"
-// 3. Value should be a function
-
-snapp.create("button", {
-  onClick: () => console.log("works"),
-  onClick2: () => {}, // ❌ Not an event - ignored
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((element) => {
+    element.removedNodes.forEach((node) => {
+      // Clean up event listeners
+      if (node.getAttribute("snapp-e-click")) {
+        delete eventEvent["click"][elementDataId];
+      }
+      // Clean up dynamic dependencies
+      if (node.getAttribute("snapp-dynamic")) {
+        dynamicDependencies.delete(node);
+      }
+    });
+  });
 });
 ```
 
-### Problem: Memory usage grows after removing elements
+#### src/types.ts (Type Definitions)
 
-**This shouldn't happen!** MutationObserver automatically cleans up.
+Comprehensive TypeScript types for:
 
-**If it does**:
+- **Component types:** `SnappComponent`, `SnappChild`, `SnappProps`
+- **State types:** `DynamicValue`, `SubscribeData`
+- **Attribute types:** `HTMLAttributes`, `IntrinsicElements`
+- **Handler types:** `EventHandler`, `RenderType`
 
-- Check browser DevTools Memory tab
-- Make sure elements are actually being removed from DOM
-- Use `snapp.remove()` to ensure proper cleanup
+**SubscribeData Interface:**
 
----
-
-## Performance Considerations {#performance-considerations}
-
-**Optimized:**
-
-- Single event listener per event type
-- Direct DOM manipulation (no virtual DOM)
-- Dependency tracking prevents unnecessary updates
-- Automatic memory cleanup
-
-**Watch out for:**
-
-- Large lists: Consider pagination or virtual scrolling
-- Frequent updates: Batch updates in single `dynamic.update()`
-- Complex computations: Cache in dynamic values
-
----
-
-## File Dependencies
-
-```
-package.json (build config)
-    ↓
-tsconfig.json (TypeScript config)
-    ↓
-src/index.ts (entry point)
-    ├─ imports from src/core.ts
-    ├─ imports types from src/types.ts
-    └─ re-exports everything
-
-src/core.ts (implementation)
-    └─ imports types from src/types.ts (type-only)
-
-src/types.ts (type definitions)
-    └─ standalone
-
-src/jsx.d.ts (JSX support)
-    └─ standalone ambient declarations
+```typescript
+interface SubscribeData {
+  type: "node" | "attr" | "style"; // What's being updated
+  temp: Function; // Function to re-execute
+  subscribe: string[]; // Dynamic IDs this depends on
+  node?: Text; // Text node being updated
+  attr?: string; // Attribute name being updated
+  prop?: string; // Style property being updated
+}
 ```
 
+This tracks what type of update happens when a dynamic value changes.
+
+#### src/jsx.d.ts (JSX Support)
+
+Ambient type declarations for JSX:
+
+```typescript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      // All HTML/SVG elements with their attributes
+      div: HTMLAttributes<HTMLDivElement>;
+      button: HTMLAttributes<HTMLButtonElement>;
+      svg: HTMLAttributes<SVGSVGElement>;
+      // ... etc
+    }
+    interface ElementAttributesProperty {
+      props: any;
+    }
+    interface ElementChildrenAttribute {
+      children: any;
+    }
+  }
+}
+```
+
+This enables TypeScript to recognize JSX syntax and provide autocomplete for elements and attributes.
+
+#### src/index.ts (Entry Point)
+
+```typescript
+import snapp from "./core";
+export default snapp;
+export type { DynamicValue, SnappProps, SnappComponent, SnappChild };
+```
+
+Single entry point that re-exports the framework and types.
+
+### Dependency Tracking Algorithm
+
+When you write:
+
+```jsx
+const count = snapp.dynamic(0);
+<p>{() => count.value}</p>;
+```
+
+Snapp does the following:
+
+1. **Start tracking:** Set `track_dynamic = new Set()`
+2. **Execute function:** Call `() => count.value`, which accesses the `value` getter
+3. **Track access:** Inside `value` getter, add ID to `track_dynamic`
+4. **Create subscription:** Store the function and which dynamic values it depends on
+5. **On update:** When `count.update(5)` is called, re-execute the function and update the text node
+
+This is why arrow functions are essential - they defer execution so Snapp can track what's accessed.
+
 ---
 
-## Summary
+## Contributing
 
-**What Snapp Does:**
+We welcome contributions! Here's how to get involved:
 
-1. Creates real DOM elements with props, attributes, events
-2. Manages reactive state via `dynamic()`
-3. Tracks dependencies automatically
-4. Updates elements when state changes
-5. Cleans up memory automatically
+### Development Setup
 
-**Key Files:**
+```bash
+# Install dependencies
+npm install
 
-- `core.ts` - All framework logic
-- `types.ts` - All type definitions
-- `index.ts` - Single export point
-- `jsx.d.ts` - JSX support (optional)
+# Start development watch mode
+npm run dev
 
-**Core Concepts:**
+# Build for production
+npm run build
+```
 
-- Direct DOM (no virtual DOM)
-- Automatic dependency tracking
-- Event delegation
-- Reactive updates
-- Memory management
+### Code Style
 
-**Built for developers who want control, type safety, and simplicity.**
+- Use TypeScript for type safety
+- Follow existing code patterns in `src/core.ts`
+- Add JSDoc comments for public APIs
+- Test with JSX examples
+
+### Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes with clear commit messages
+4. Ensure code compiles: `npm run build`
+5. Submit PR with description
+
+---
+
+## License
+
+MIT - See LICENSE file for details
+
+---
+
+## Support
+
+- 🐛 [Report Issues](https://github.com/SnappJS/snapp/issues)
+- 💬 [Discussions](https://github.com/SnappJS/snapp/discussions)
+- 📦 [NPM Package](https://www.npmjs.com/package/@snappjs/core)

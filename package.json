@@ -1,6 +1,6 @@
 {
   "name": "@snappjs/core",
-  "version": "1.0.1",
+  "version": "3.0.0",
   "description": "A lightweight JSX-like framework for vanilla JavaScript with full TypeScript support",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

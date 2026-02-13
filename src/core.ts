@@ -4,7 +4,7 @@
  *
  * @version 3.0.0
  * @license MIT
- * @repository https://github.com/kigemmanuel/Snapp
+ * @repository https://github.com/SnappJS/snapp
  */
 
 import type {
@@ -21,67 +21,7 @@ import type {
 /**
  * SVG elements set - used to determine if createElementNS should be used
  */
-const SVG_ELEMENTS = new Set([
-  "svg",
-  "circle",
-  "ellipse",
-  "line",
-  "path",
-  "polygon",
-  "polyline",
-  "rect",
-  "text",
-  "textPath",
-  "tspan",
-  "defs",
-  "g",
-  "marker",
-  "mask",
-  "pattern",
-  "switch",
-  "symbol",
-  "linearGradient",
-  "radialGradient",
-  "stop",
-  "filter",
-  "feBlend",
-  "feColorMatrix",
-  "feComponentTransfer",
-  "feComposite",
-  "feConvolveMatrix",
-  "feDiffuseLighting",
-  "feDisplacementMap",
-  "feDistantLight",
-  "feDropShadow",
-  "feFlood",
-  "feFuncA",
-  "feFuncB",
-  "feFuncG",
-  "feFuncR",
-  "feGaussianBlur",
-  "feImage",
-  "feMerge",
-  "feMergeNode",
-  "feMorphology",
-  "feOffset",
-  "fePointLight",
-  "feSpecularLighting",
-  "feSpotLight",
-  "feTile",
-  "feTurbulence",
-  "image",
-  "use",
-  "foreignObject",
-  "animate",
-  "animateMotion",
-  "animateTransform",
-  "mpath",
-  "set",
-  "clipPath",
-  "desc",
-  "metadata",
-  "view",
-]);
+import SVG_ELEMENTS from "./svg_elements";
 
 /**
  * Event name mapping for compatibility

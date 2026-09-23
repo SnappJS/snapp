@@ -207,19 +207,6 @@ snapp-kit compiles `views/index.jsx` → `public/index.js`, starts a live server
 
 ---
 
-### Option 3: Global CLI
-
-Install snapp-kit globally for quick project creation:
-
-```bash
-npm install -g snapp-kit
-
-snapp create my-app
-cd my-app
-npm install
-snapp build -W
-```
-
 ---
 
 ## Quick Start

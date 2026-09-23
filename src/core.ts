@@ -95,7 +95,7 @@ const createElement = (
       if (value == null || value === false) continue;
 
       let attrKey = key;
-      
+
       attrKey = (attrKey === "className") ? "class" : attrKey;
       attrKey = (attrKey === "htmlFor") ? "for" : attrKey;
 
@@ -572,7 +572,7 @@ const updateDynamicValue = (element: Element, items: number[]): void => {
         }
 
       } else if (dynamic.type === "style" && dynamic.prop) {
-        if (newTemp.includes("-")) {
+        if (dynamic.prop.includes("-")) {
           (element as any).style.setProperty(dynamic.prop, newTemp);
         } else {
           (element as any).style[dynamic.prop] = newTemp;
@@ -656,36 +656,64 @@ const callCleardynamicElement = (
   }
 };
 
+/**
+ * Cleans up event listeners and dynamic subscriptions for a single element
+ */
+const cleanupElement = (node: Element): void => {
+  const elementDataId = node.getAttribute("snapp-data");
+  if (elementDataId) {
+    for (const attrName of node.getAttributeNames()) {
+      if (attrName.startsWith("snapp-e-")) {
+        const eventType = attrName.replace("snapp-e-", "");
+
+        if (elementEvent[eventType]?.[Number(elementDataId)]) {
+          delete elementEvent[eventType]?.[Number(elementDataId)];
+        }
+
+        if (Object.keys(elementEvent[eventType] || {}).length === 0) {
+          document.removeEventListener(eventType, eventListener[eventType]);
+          delete eventListener[eventType];
+          delete elementEvent[eventType];
+        }
+      }
+    }
+  }
+
+  if (node.getAttribute("snapp-dynamic")) {
+    dynamicDependencies.delete(node);
+  }
+};
+
 const observer = new MutationObserver((mutations) => {
+  let needsDynamicCleanup = false;
+
   mutations.forEach((element) => {
     element.removedNodes.forEach((node) => {
       if (node instanceof Element) {
-        const elementDataId = node.getAttribute("snapp-data");
-        if (elementDataId) {
-          for (const attrName of node.getAttributeNames()) {
-            if (attrName.startsWith("snapp-e-")) {
-              const eventType = attrName.replace("snapp-e-", "");
-
-              if (elementEvent[eventType]?.[Number(elementDataId)]) {
-                delete elementEvent[eventType]?.[Number(elementDataId)];
-              }
-
-              if (Object.keys(elementEvent[eventType] || {}).length === 0) {
-                document.removeEventListener(eventType, eventListener[eventType]);
-                delete eventListener[eventType];
-                delete elementEvent[eventType];
-              }
-            }
-          }
+        // Clean up the removed node itself
+        cleanupElement(node);
+        if (node.getAttribute("snapp-dynamic")) {
+          needsDynamicCleanup = true;
         }
 
-        if (node.getAttribute("snapp-dynamic")) {
-          dynamicDependencies.delete(node);
-          callCleardynamicElement();
+        // Clean up ALL nested children with snapp attributes
+        const childrenWithEvents = node.querySelectorAll("[snapp-data]");
+        childrenWithEvents.forEach((child) => cleanupElement(child));
+
+        const childrenWithDynamic = node.querySelectorAll("[snapp-dynamic]");
+        if (childrenWithDynamic.length > 0) {
+          childrenWithDynamic.forEach((child) => {
+            dynamicDependencies.delete(child);
+          });
+          needsDynamicCleanup = true;
         }
       }
     });
   });
+
+  if (needsDynamicCleanup) {
+    callCleardynamicElement();
+  }
 });
 
 observer.observe(document, {
